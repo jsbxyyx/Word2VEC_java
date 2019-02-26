@@ -60,6 +60,11 @@ public class Word2VEC {
 	private int words;
 	private int size;
 	private int topNSize = 40;
+	
+	/**
+	 * 是否已经加载模型
+	 */
+	private boolean loading = false;
 
 	/**
 	 * 加载模型
@@ -103,6 +108,7 @@ public class Word2VEC {
 		} finally {
 			bis.close();
 			dis.close();
+			loading = true;
 		}
 	}
 
@@ -141,6 +147,7 @@ public class Word2VEC {
 			}
 
 		}
+		loading = true;
 	}
 
 	private static final int MAX_SIZE = 50;
@@ -319,6 +326,38 @@ public class Word2VEC {
 		accum = accum | (b[2] & 0xff) << 16;
 		accum = accum | (b[3] & 0xff) << 24;
 		return Float.intBitsToFloat(accum);
+	}
+	
+	/**
+	 * 计算词相似度
+	 * @param word1
+	 * @param word2
+	 * @return
+	 */
+	public float wordSimilarity(String word1, String word2) {
+		if (!loading) {
+			return 0;
+		}
+		float[] word1Vec = getWordVector(word1);
+		float[] word2Vec = getWordVector(word2);
+		if(word1Vec == null || word2Vec == null) {
+			return 0;
+		}
+		return calDist(word1Vec, word2Vec);
+	}
+	
+	/**
+	 * 计算向量内积
+	 * @param vec1
+	 * @param vec2
+	 * @return
+	 */
+	private float calDist(float[] vec1, float[] vec2) {
+		float dist = 0;
+		for (int i = 0; i < vec1.length; i++) {
+			dist += vec1[i] * vec2[i];
+		}
+		return dist;
 	}
 
 	/**
